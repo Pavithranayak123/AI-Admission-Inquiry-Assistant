@@ -1,0 +1,253 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1c3bfCDg-RPWjFmCRv_d4OfNJtbCi2EHvmvKz-ZtjCro",
+          "mode": "list",
+          "cachedResultName": "Admission Inquiry Form(Responses)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1c3bfCDg-RPWjFmCRv_d4OfNJtbCi2EHvmvKz-ZtjCro/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2092718846,
+          "mode": "list",
+          "cachedResultName": "Form Responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1c3bfCDg-RPWjFmCRv_d4OfNJtbCi2EHvmvKz-ZtjCro/edit#gid=2092718846"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b548ce9b-acb4-46e9-babc-3a77d4acbbaa",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "0APFnaFAYnktRiWN",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer sk-.............................."
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gpt-3.5-turbo\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are an Admission Assistant for a college. Answer admission-related questions clearly.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"{{$json['Question']}}\"\n    }\n  ]\n}\n\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "5b8273da-1b59-48c0-aff0-e0fbe4f69f43",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{$node[\"Google Sheets Trigger\"].json[\"Email\"]}}",
+        "subject": "Response to your Admission Inquiry",
+        "emailType": "text",
+        "message": "=Hi {{$node[\"Google Sheets Trigger\"].json[\"Name\"]}},\n\nHere is the answer to your question:\n\n{{$node[\"HTTP Request\"].json[\"choices\"][0][\"message\"][\"content\"]}}\n\nThanks,  \nAdmission Team\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        416,
+        0
+      ],
+      "id": "50185639-1962-4d0f-a5af-49122f83a9f5",
+      "name": "Send a message",
+      "webhookId": "7078cd3b-04eb-4588-bd0b-7d0d17f0c764",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "kI2MN8n03uT0y0cJ",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1c3bfCDg-RPWjFmCRv_d4OfNJtbCi2EHvmvKz-ZtjCro",
+          "mode": "list",
+          "cachedResultName": "Admission Inquiry Form(Responses)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1c3bfCDg-RPWjFmCRv_d4OfNJtbCi2EHvmvKz-ZtjCro/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2092718846,
+          "mode": "list",
+          "cachedResultName": "Form Responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1c3bfCDg-RPWjFmCRv_d4OfNJtbCi2EHvmvKz-ZtjCro/edit#gid=2092718846"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{$node[\"Google Sheets Trigger\"].json[\"Timestamp\"]}}",
+            "AI Response": "={{$node[\"HTTP Request\"].json[\"choices\"][0][\"message\"][\"content\"]}}"
+          },
+          "matchingColumns": [
+            "Timestamp"
+          ],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Question",
+              "displayName": "Question",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI Response",
+              "displayName": "AI Response",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        624,
+        0
+      ],
+      "id": "2e96a5f3-e7ce-4f6b-b4d4-6600cec325a2",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "meU0coPNsYu6VSuH",
+          "name": "Google Sheets account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e5db26ef-6180-4af6-a2a3-b959b2a2ec0f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3281ef2fd145a8a28fb79efd57f510b60f445f24ba7d0327fd74c47dd9fbf687"
+  },
+  "id": "sOGJ56DHJHkFtFL6",
+  "tags": []
+}
